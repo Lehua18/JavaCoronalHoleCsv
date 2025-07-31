@@ -38,10 +38,10 @@ public class Main {
                     else
                         dayStr = day + "";
 
-                    boolean found = false;
-                    int count = 1;
+                    boolean areaFound = false;
+                    int count = 0;
                     String countStr;
-                    while(!found && count<24){
+                    while(!areaFound && count<24){
                         if(count<10)
                             countStr="0"+count;
                         else
@@ -86,18 +86,20 @@ public class Main {
                                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                                 String line = reader.readLine();
                                 double area = 0;
+                                areaFound = false;
                                 while(line != null){
                                     if(line.length() == 36){
                                         if(line.startsWith("Area (thousandth of solar disk) :")){
                                             area+= Double.parseDouble(line.substring(33));
                                             System.out.println("Found for "+year+"/"+month+"/"+day+" at "+countStr+":00 ");
+                                            areaFound = true;
                                         }
                                     }
                                     line = reader.readLine();
                                 }
-                                areas.add(new String[]{year+"",monthStr, dayStr, area+""});
+                                if(areaFound)
+                                    areas.add(new String[]{year+"",monthStr, dayStr, area+""});
                                 reader.close();
-                                found = true;
                            // } else {
                             //    System.out.println("GET request failed for "+year+"/"+month+"/"+day+" at "+countStr+":00. Response code: " + responseCode);
                             //}
