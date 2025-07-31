@@ -20,7 +20,7 @@ public class Main {
         String specURL = baseURL;
         for (int year = 2013; year <= 2025; year++) {
             for (int month = 1; month <= 12; month++) {
-                if(year == 2013)
+                if(year == 2013 && month<11)
                     month = 11;
                 //Adds '0' to the beginning of each month if necessary
                 String monthStr;
@@ -28,9 +28,10 @@ public class Main {
                     monthStr = "0" + month;
                 else
                     monthStr = month + "";
-                specURL = baseURL + year + "/" + monthStr + "/";
+
 
                 for (int day = 1; day < numDays(month, year); day++) {
+                    specURL = baseURL + year + "/" + monthStr + "/";
                     //Adds '0' to the beginning of each day if necessary
                     String dayStr;
                     if (day < 10)
