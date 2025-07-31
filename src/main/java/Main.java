@@ -56,7 +56,12 @@ public class Main {
                             //Connect and pull data from URL and store in String
                             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                             connection.setRequestMethod("GET");
-                            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+                            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+                            connection.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                            connection.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+                            connection.setRequestProperty("Connection", "keep-alive");
+                            connection.setRequestProperty("Referer", "https://iswa.gsfc.nasa.gov/");
+
                             int responseCode = connection.getResponseCode();
                             if (responseCode == HttpURLConnection.HTTP_OK) {
                                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
