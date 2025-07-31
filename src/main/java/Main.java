@@ -5,7 +5,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
-
 import com.opencsv.CSVWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,28 +48,49 @@ public class Main {
                             countStr = count+"";
                         specURL = specURL+"ASSA_Hole_"+year+monthStr+dayStr+countStr+".txt";
                         try {
-                            //Convert string to URL
-                            URI uri = URI.create(specURL);
-                            URL url = uri.toURL();
+//                            //Convert string to URL
+//                            URI uri = URI.create(specURL);
+//                            URL url = uri.toURL();
+//
+//                            //Connect and pull data from URL and store in String
+//                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//
+//                            // Equivalent of curl -L (follow redirects) — enabled by default in HttpURLConnection
+//                            connection.setInstanceFollowRedirects(true);
+//
+//                            // Equivalent of curl -A (User-Agent)
+//                            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+//
+//                            // Equivalent of curl -e (Referer)
+//                            connection.setRequestProperty("Referer", "https://iswa.gsfc.nasa.gov/");
+//
+//                            // Optional but can help
+//                            connection.setRequestProperty("Accept", "*/*");
+//                            connection.setRequestProperty("Connection", "keep-alive");
+//                            connection.setRequestMethod("GET");
+//
+//
+//                            int responseCode = connection.getResponseCode();
+//                            if (responseCode == HttpURLConnection.HTTP_OK) {
+                            String[] command = {
+                                    "curl",
+                                    "-s", // Silent
+                                    "-L", // Follow redirects
+                                    "-A", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", // User-Agent
+                                    "-e", "https://iswa.gsfc.nasa.gov/", // Referer
+                                    specURL
+                            };
 
-                            //Connect and pull data from URL and store in String
-                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                            connection.setRequestMethod("GET");
-                            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-                            connection.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-                            connection.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-                            connection.setRequestProperty("Connection", "keep-alive");
-                            connection.setRequestProperty("Referer", "https://iswa.gsfc.nasa.gov/");
-
-                            int responseCode = connection.getResponseCode();
-                            if (responseCode == HttpURLConnection.HTTP_OK) {
-                                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                            ProcessBuilder pb = new ProcessBuilder(command);
+                            Process process = pb.start();
+                                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                                 String line = reader.readLine();
                                 double area = 0;
                                 while(line != null){
                                     if(line.length() == 36){
                                         if(line.startsWith("Area (thousandth of solar disk) :")){
                                             area+= Double.parseDouble(line.substring(33));
+                                            System.out.println("Found for "+year+"/"+month+"/"+day+" at "+countStr+":00 ");
                                         }
                                     }
                                     line = reader.readLine();
@@ -78,9 +98,9 @@ public class Main {
                                 areas.add(new String[]{year+"",monthStr, dayStr, area+""});
                                 reader.close();
                                 found = true;
-                            } else {
-                                System.out.println("GET request failed for "+year+"/"+month+"/"+day+" at "+countStr+":00. Response code: " + responseCode);
-                            }
+                           // } else {
+                            //    System.out.println("GET request failed for "+year+"/"+month+"/"+day+" at "+countStr+":00. Response code: " + responseCode);
+                            //}
                         } catch (Exception e) {
                             System.out.println("Failed for "+year+"/"+month+"/"+day+" at "+countStr+":00 "+e);/*Okay because this is not production software*/
                         }
