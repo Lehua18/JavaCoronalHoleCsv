@@ -1,13 +1,9 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
 import java.util.*;
 import com.opencsv.CSVWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 
 public class Main {
     private static final String baseURL = "https://iswa.gsfc.nasa.gov/iswa_data_tree/model/solar/assa/hole/";
@@ -28,89 +24,70 @@ public class Main {
                 else
                     monthStr = month + "";
 
+                try{
+                    for (int day = 1; day < numDays(month, year); day++) {
 
-                for (int day = 1; day < numDays(month, year); day++) {
-                    specURL = baseURL + year + "/" + monthStr + "/";
-                    //Adds '0' to the beginning of each day if necessary
-                    String dayStr;
-                    if (day < 10)
-                        dayStr = "0" + day;
-                    else
-                        dayStr = day + "";
-
-                    boolean areaFound = false;
-                    int count = 0;
-                    String countStr;
-                    while(!areaFound && count<24){
-                        if(count<10)
-                            countStr="0"+count;
+                        //Adds '0' to the beginning of each day if necessary
+                        String dayStr;
+                        if (day < 10)
+                            dayStr = "0" + day;
                         else
-                            countStr = count+"";
-                        specURL = specURL+"ASSA_Hole_"+year+monthStr+dayStr+countStr+".txt";
-                        try {
-//                            //Convert string to URL
-//                            URI uri = URI.create(specURL);
-//                            URL url = uri.toURL();
-//
-//                            //Connect and pull data from URL and store in String
-//                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//
-//                            // Equivalent of curl -L (follow redirects) — enabled by default in HttpURLConnection
-//                            connection.setInstanceFollowRedirects(true);
-//
-//                            // Equivalent of curl -A (User-Agent)
-//                            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-//
-//                            // Equivalent of curl -e (Referer)
-//                            connection.setRequestProperty("Referer", "https://iswa.gsfc.nasa.gov/");
-//
-//                            // Optional but can help
-//                            connection.setRequestProperty("Accept", "*/*");
-//                            connection.setRequestProperty("Connection", "keep-alive");
-//                            connection.setRequestMethod("GET");
-//
-//
-//                            int responseCode = connection.getResponseCode();
-//                            if (responseCode == HttpURLConnection.HTTP_OK) {
-                            String[] command = {
+                            dayStr = day + "";
+
+                        boolean areaFound = false;
+                        int count = 0;
+                        String countStr;
+                        int totalLoop = 0;
+                        double area = 0;
+                        BufferedReader reader = null;
+                        while (count < 24) {
+                            specURL = baseURL + year + "/" + monthStr + "/";
+                            if (count < 10)
+                                countStr = "0" + count;
+                            else
+                                countStr = count + "";
+                            specURL = specURL + "ASSA_Hole_" + year + monthStr + dayStr + countStr + ".txt";
+                            try {
+                                String[] command = {
                                     "curl",
                                     "-s", // Silent
                                     "-L", // Follow redirects
                                     "-A", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", // User-Agent
                                     "-e", "https://iswa.gsfc.nasa.gov/", // Referer
                                     specURL
-                            };
+                                };
 
-                            ProcessBuilder pb = new ProcessBuilder(command);
-                            Process process = pb.start();
-                                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                                ProcessBuilder pb = new ProcessBuilder(command);
+                                Process process = pb.start();
+                                reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                                 String line = reader.readLine();
-                                double area = 0;
-                                areaFound = false;
-                                while(line != null){
-                                    if(line.length() == 36){
-                                        if(line.startsWith("Area (thousandth of solar disk) :")){
-                                            area+= Double.parseDouble(line.substring(33));
-                                            System.out.println("Found for "+year+"/"+month+"/"+day+" at "+countStr+":00 ");
+
+                                while (line != null) {
+                                    if (line.length() == 36) {
+                                        if (line.startsWith("Area (thousandth of solar disk) :")) {
+                                            area += Double.parseDouble(line.substring(33));
+                                            System.out.println("Found for " + year + "/" + month + "/" + day + " at " + countStr + ":00 ");
                                             areaFound = true;
+                                            totalLoop++;
                                         }
                                     }
                                     line = reader.readLine();
                                 }
-                                if(areaFound)
-                                    areas.add(new String[]{year+"",monthStr, dayStr, area+""});
-                                reader.close();
-                           // } else {
-                            //    System.out.println("GET request failed for "+year+"/"+month+"/"+day+" at "+countStr+":00. Response code: " + responseCode);
-                            //}
-                        } catch (Exception e) {
-                            System.out.println("Failed for "+year+"/"+month+"/"+day+" at "+countStr+":00 "+e);/*Okay because this is not production software*/
+                            } catch (Exception e) {
+                                System.out.println("Failed for " + year + "/" + month + "/" + day + " at " + countStr + ":00 " + e);/*Okay because this is not production software*/
+                            }
+                            count++;
                         }
-                        count++;
+                        if (areaFound)
+                            areas.add(new String[]{year + "", monthStr, dayStr, (area / totalLoop) + ""});
+                        reader.close();
                     }
+                }catch (IOException e){
+                    e.printStackTrace();
                 }
             }
         }
+
         try (CSVWriter writer = new CSVWriter(new FileWriter("moreData.csv"))) {
             writer.writeAll(areas);
             System.out.println("CSV file created successfully with OpenCSV");
