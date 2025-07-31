@@ -41,7 +41,7 @@ public class Main {
                     boolean found = false;
                     int count = 1;
                     String countStr;
-                    while(!found || count>23){
+                    while(!found || count<23){
                         if(count<10)
                             countStr="0"+count;
                         else
