@@ -56,6 +56,7 @@ public class Main {
                             //Connect and pull data from URL and store in String
                             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                             connection.setRequestMethod("GET");
+                            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
                             int responseCode = connection.getResponseCode();
                             if (responseCode == HttpURLConnection.HTTP_OK) {
                                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
